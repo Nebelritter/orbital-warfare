@@ -54,9 +54,9 @@ public class Main extends SimpleApplication {
     	initCameraControls();
     	initInputs();
     	initPhysics();
-    	initGUI();
+//    	initGUI();
         
-        spaceShip = assetManager.loadModel("Models/SimpleSpaceShip.j3o");
+        spaceShip = assetManager.loadModel("Models/SpaceShips/SimpleSpaceShip.j3o");
         Material mat_default = new Material( 
             assetManager, "Common/MatDefs/Misc/ShowNormals.j3md");
         spaceShip.setMaterial(mat_default);
@@ -95,11 +95,11 @@ public class Main extends SimpleApplication {
         bulletAppState.setDebugEnabled(true);
 	}
     
-    protected void initGUI() {
-    	Screen screen = new Screen(this);
-    	screen.initialize();
-    	guiNode.addControl(screen);		
-	}
+//    protected void initGUI() {
+//    	Screen screen = new Screen(this);
+//    	screen.initialize();
+//    	guiNode.addControl(screen);		
+//	}
 
 
 	@Override
