@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.cbf.gravity_shooter.input;
+package de.cbf.gravity_shooter.camera;
 
 import java.util.logging.Logger;
 

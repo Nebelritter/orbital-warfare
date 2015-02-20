@@ -30,7 +30,7 @@
 	<classpathentry kind="lib" path="lib/nifty-default-controls.jar"/>
 	<classpathentry kind="lib" path="lib/nifty-examples.jar"/>
 	<classpathentry kind="lib" path="lib/nifty-style-black.jar"/>
-	<classpathentry kind="lib" path="lib/nifty.jar"/>
+	<classpathentry kind="lib" path="lib/nifty.jar" sourcepath="D:/development/External Sources/jME3_2014-06-12/source"/>
 	<classpathentry kind="lib" path="lib/stack-alloc.jar"/>
 	<classpathentry kind="lib" path="lib/vecmath.jar"/>
 	<classpathentry kind="lib" path="lib/xmlpull-xpp3.jar"/>
