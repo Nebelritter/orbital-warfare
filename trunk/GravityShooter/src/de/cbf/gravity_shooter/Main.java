@@ -48,8 +48,7 @@ public class Main extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-    	//remove camera movement with the mouse (we don't use fps controls)    	
-    	
+    	//remove camera movement with the mouse (we don't use fps controls)
     	
     	initCameraControls();
     	initInputs();
