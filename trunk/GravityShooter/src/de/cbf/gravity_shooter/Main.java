@@ -20,6 +20,7 @@ import com.jme3.niftygui.NiftyJmeDisplay;
 import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.shape.Sphere;
 
 import de.cbf.gravity_shooter.camera.RTSCamera;
 import de.cbf.gravity_shooter.camera.RTSCameraAppState;
@@ -55,16 +56,24 @@ public class Main extends SimpleApplication {
     	initPhysics();
 //    	initGUI();
         
+    	Material mat_default = new Material( 
+                assetManager, "Common/MatDefs/Misc/ShowNormals.j3md");
+    	
+    	Sphere nullPoint = new Sphere(20, 20, 1f);    	
+    	Geometry nullPointGeom = new Geometry("NullPoint", nullPoint);
+    	nullPointGeom.setMaterial(mat_default);    
+    	nullPointGeom.scale(0.1f);
+    	rootNode.attachChild(nullPointGeom);
+    	
         spaceShip = assetManager.loadModel("Models/SpaceShips/SimpleSpaceShip.j3o");
-        Material mat_default = new Material( 
-            assetManager, "Common/MatDefs/Misc/ShowNormals.j3md");
+        
         spaceShip.setMaterial(mat_default);
         
         //rotate spaceShip to be at bottom pointing upwards
         float degToRad = FastMath.DEG_TO_RAD;
         Quaternion quarternion = new Quaternion().fromAngles(0,-90*degToRad, -90*degToRad);       
 		spaceShip.setLocalRotation(quarternion);
-		
+		spaceShip.setLocalTranslation(1f, 1f, 0f);
 		spaceShip.scale(0.2f);
         rootNode.attachChild(spaceShip);
 
@@ -92,8 +101,7 @@ public class Main extends SimpleApplication {
 	private void initInputs() {		
 	    inputManager.addMapping(ACTION_SELECT,new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
 	    inputManager.addMapping(ACTION_DE_SELECT,new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));	    
-	    
-        
+	            
         inputManager.addListener(actionListenerSelection, ACTION_SELECT,ACTION_DE_SELECT);
 	}
 
@@ -119,15 +127,20 @@ public class Main extends SimpleApplication {
 //	}
 
 
+	/**
+	 * all changes between Frames
+	 * 
+	 * @see com.jme3.app.SimpleApplication#simpleUpdate(float)
+	 */
 	@Override
     public void simpleUpdate(float tpf) {
 		float xAngle = FastMath.DEG_TO_RAD*10*tpf;
 		float moveSpeed = 0.1f;
 		float x = moveSpeed * tpf;
-		float y = moveSpeed * tpf;
+		float y = 0.3f * tpf;
 		spaceShip.move(x, y, 0);
 		spaceShip.rotate(0, - xAngle,0);
-    }
+    }  
 
     @Override
     public void simpleRender(RenderManager rm) {

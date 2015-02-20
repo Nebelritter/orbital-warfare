@@ -43,7 +43,7 @@ public class RTSCamera implements AnalogListener{
     protected Camera cam;
     protected Vector3f initialUpVec;
     protected float moveSpeed = 3f;    
-    protected float zoomSpeed = 1f;
+    protected float zoomSpeed = 5f;
     protected boolean enabled = true;
     protected MotionAllowedListener motionAllowed = null;
     protected InputManager inputManager;
