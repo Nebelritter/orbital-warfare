@@ -7,11 +7,8 @@ import com.jme3.app.FlyCamAppState;
 import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.collision.CollisionResults;
-import com.jme3.input.KeyInput;
 import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
-import com.jme3.input.controls.KeyTrigger;
-import com.jme3.input.controls.MouseAxisTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
 import com.jme3.material.Material;
 import com.jme3.math.FastMath;
@@ -19,13 +16,15 @@ import com.jme3.math.Quaternion;
 import com.jme3.math.Ray;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
+import com.jme3.niftygui.NiftyJmeDisplay;
 import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Spatial;
 
-
-import de.cbf.gravity_shooter.input.RTSCamera;
-import de.cbf.gravity_shooter.input.RTSCameraAppState;
+import de.cbf.gravity_shooter.camera.RTSCamera;
+import de.cbf.gravity_shooter.camera.RTSCameraAppState;
+import de.cbf.gravity_shooter.gui.StartScreen;
+import de.lessvoid.nifty.Nifty;
 
 
 /**
@@ -40,6 +39,7 @@ public class Main extends SimpleApplication {
 
 	public static void main(String[] args) {
         Main app = new Main();
+        app.setPauseOnLostFocus(false);
         app.start();
     }
 
@@ -72,6 +72,24 @@ public class Main extends SimpleApplication {
     }
 
 	
+	private void initGUI() {
+		//init startscreen app state
+		StartScreen startScreen = new StartScreen();
+		stateManager.attach(startScreen);
+		NiftyJmeDisplay niftyDisplay = new NiftyJmeDisplay(assetManager,
+                inputManager,
+                audioRenderer,
+                guiViewPort);
+		Nifty nifty = niftyDisplay.getNifty();
+		nifty.fromXml("Interface/GUI/MyNiftyGUI.xml", "start", startScreen);
+
+		// attach the nifty display to the gui view port as a processor
+		guiViewPort.addProcessor(niftyDisplay);
+
+		
+	}
+
+
 	private void initInputs() {		
 	    inputManager.addMapping(ACTION_SELECT,new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
 	    inputManager.addMapping(ACTION_DE_SELECT,new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));	    
@@ -109,7 +127,7 @@ public class Main extends SimpleApplication {
 		float x = moveSpeed * tpf;
 		float y = moveSpeed * tpf;
 		spaceShip.move(x, y, 0);
-		spaceShip.rotate(xAngle, 0, 0);
+		spaceShip.rotate(0, - xAngle,0);
     }
 
     @Override

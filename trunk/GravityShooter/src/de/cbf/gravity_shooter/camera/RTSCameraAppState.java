@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.cbf.gravity_shooter.input;
+package de.cbf.gravity_shooter.camera;
 
 import com.jme3.app.Application;
 import com.jme3.app.state.AbstractAppState;
