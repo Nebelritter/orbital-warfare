@@ -80,7 +80,7 @@ public class Main extends SimpleApplication {
     }
 
 	
-	private void initGUI() {
+	protected void initGUI() {
 		//init startscreen app state
 		StartScreen startScreen = new StartScreen();
 		stateManager.attach(startScreen);
@@ -98,7 +98,7 @@ public class Main extends SimpleApplication {
 	}
 
 
-	private void initInputs() {		
+	protected void initInputs() {		
 	    inputManager.addMapping(ACTION_SELECT,new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
 	    inputManager.addMapping(ACTION_DE_SELECT,new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));	    
 	            
@@ -107,6 +107,13 @@ public class Main extends SimpleApplication {
 
 	protected void initCameraControls() {
 		stateManager.detach( stateManager.getState(FlyCamAppState.class));
+		
+		float xCamLoc = 0f;		
+		float yCamLoc = 0f;
+		float zCamLoc = 7f;
+		Vector3f camLocation = new Vector3f(xCamLoc, yCamLoc, zCamLoc);
+		cam.setLocation(camLocation);
+		
     	RTSCamera rtsCamera = new RTSCamera(cam);
     	RTSCameraAppState rtsCamAppState = new RTSCameraAppState();
     	rtsCamAppState.setRtsCam(rtsCamera);
