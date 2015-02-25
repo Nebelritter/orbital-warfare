@@ -19,11 +19,14 @@ import com.jme3.math.Vector3f;
 import com.jme3.niftygui.NiftyJmeDisplay;
 import com.jme3.renderer.RenderManager;
 import com.jme3.scene.Geometry;
+import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
 import com.jme3.scene.shape.Sphere;
 
 import de.cbf.gravity_shooter.camera.RTSCamera;
 import de.cbf.gravity_shooter.camera.RTSCameraAppState;
+import de.cbf.gravity_shooter.controls.PlayerKeyInputListener;
+import de.cbf.gravity_shooter.controls.PlayerShipControl;
 import de.cbf.gravity_shooter.gui.StartScreen;
 import de.lessvoid.nifty.Nifty;
 
@@ -35,9 +38,17 @@ import de.lessvoid.nifty.Nifty;
 public class Main extends SimpleApplication {
 	private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
     
-    public static final String ACTION_SELECT = "ActionSelect";
-    public static final String ACTION_DE_SELECT = "ActionDeSelect";
+    public static final String ACTION_SELECT = "action.select";
+    public static final String ACTION_DE_SELECT = "action.deselect";
 
+	private static final float MAX_VELOCITY = 1f;
+	private static final float ACCELERATION_VALUE = 0.01f;
+	private static final float ROTATION_VALUE = FastMath.DEG_TO_RAD*90;
+
+	public static final String SPACE_SHIP_NAME = "SpaceShip";
+
+	private static final String SPACE_SHIP_MOVEMENT_NODE = "SpaceShipMovementNode";
+	
 	public static void main(String[] args) {
         Main app = new Main();
         app.setPauseOnLostFocus(false);
@@ -45,7 +56,9 @@ public class Main extends SimpleApplication {
     }
 
 	protected BulletAppState bulletAppState;
-	private Spatial spaceShip;
+	private Node spaceShipMovementNode;
+
+	private PlayerKeyInputListener playerKeyListener;
 
     @Override
     public void simpleInitApp() {
@@ -64,19 +77,26 @@ public class Main extends SimpleApplication {
     	nullPointGeom.setMaterial(mat_default);    
     	nullPointGeom.scale(0.1f);
     	rootNode.attachChild(nullPointGeom);
-    	
-        spaceShip = assetManager.loadModel("Models/SpaceShips/SimpleSpaceShip.j3o");
-        
+    	    	
+        Spatial spaceShip = assetManager.loadModel("Models/SpaceShips/SimpleSpaceShip.j3o");
+        spaceShip.setName(SPACE_SHIP_NAME);
         spaceShip.setMaterial(mat_default);
         
         //rotate spaceShip to be at bottom pointing upwards
         float degToRad = FastMath.DEG_TO_RAD;
-        Quaternion quarternion = new Quaternion().fromAngles(0,-90*degToRad, -90*degToRad);       
+        Quaternion quarternion = new Quaternion().fromAngles(0,-90*degToRad, -90*degToRad);
 		spaceShip.setLocalRotation(quarternion);
-		spaceShip.setLocalTranslation(1f, 1f, 0f);
 		spaceShip.scale(0.2f);
-        rootNode.attachChild(spaceShip);
 
+		spaceShipMovementNode = new Node(SPACE_SHIP_MOVEMENT_NODE);
+		//create controller, that will move our ship
+		PlayerShipControl playerShipControl = new PlayerShipControl();
+		playerShipControl.setMaxVelocity(MAX_VELOCITY);
+		//attach controller, that will move the playership
+		spaceShipMovementNode.addControl(playerShipControl);
+		
+		spaceShipMovementNode.attachChild(spaceShip);
+		rootNode.attachChild(spaceShipMovementNode);
     }
 
 	
@@ -100,9 +120,15 @@ public class Main extends SimpleApplication {
 
 	protected void initInputs() {		
 	    inputManager.addMapping(ACTION_SELECT,new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
-	    inputManager.addMapping(ACTION_DE_SELECT,new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));	    
+	    inputManager.addMapping(ACTION_DE_SELECT,new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));	 
+	    
+	    playerKeyListener = new PlayerKeyInputListener();
+	    playerKeyListener.setAccelerationValue(ACCELERATION_VALUE);
+	    playerKeyListener.setRotationValue(ROTATION_VALUE);
+	    
+	    playerKeyListener.registerWithInputManager(inputManager);
 	            
-        inputManager.addListener(actionListenerSelection, ACTION_SELECT,ACTION_DE_SELECT);
+        inputManager.addListener(actionListenerSelection, ACTION_SELECT,ACTION_DE_SELECT);        
 	}
 
 	protected void initCameraControls() {
@@ -141,13 +167,15 @@ public class Main extends SimpleApplication {
 	 */
 	@Override
     public void simpleUpdate(float tpf) {
-		float xAngle = FastMath.DEG_TO_RAD*10*tpf;
-		float moveSpeed = 0.1f;
-		float x = moveSpeed * tpf;
-		float y = 0.3f * tpf;
-		spaceShip.move(x, y, 0);
-		spaceShip.rotate(0, - xAngle,0);
-    }  
+		//obtain control to set desired movement/rotation that is created in inputlistener
+		PlayerShipControl playerShipControl = spaceShipMovementNode.getControl(PlayerShipControl.class);
+		
+		float desiredVelocity = playerKeyListener.getDesiredVelocity();
+		float desiredRotationRads;
+		desiredRotationRads = playerKeyListener.getDesiredRotationRads();		
+		playerShipControl.setDesiredVelocity(desiredVelocity);		
+		playerShipControl.setDesiredRotationRads(desiredRotationRads);
+    }
 
     @Override
     public void simpleRender(RenderManager rm) {
