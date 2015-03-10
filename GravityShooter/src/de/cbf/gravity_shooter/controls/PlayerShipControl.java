@@ -22,14 +22,17 @@ import de.cbf.gravity_shooter.Main;
 public class PlayerShipControl extends AbstractControl {
 	private static final Logger LOGGER = Logger.getLogger(PlayerShipControl.class.getName());
 	
+	private static final Vector3f NULL_VECTOR = new Vector3f(0,0,0);
+	
 	/** already tpf'ed	 */
 	private float desiredVelocity;
 	private float maxVelocity;
 	/** already tpf'ed	 */
 	private float desiredRotationRads;
 	
+	private Vector3f gravityVector; 
 	
-	private Vector3f movementVector = new Vector3f(0,0,0);
+	private Vector3f movementVector = NULL_VECTOR;
 	
 	/**
 	 * 
@@ -81,6 +84,13 @@ public class PlayerShipControl extends AbstractControl {
 				}else{
 					//speed is okay
 				}
+			}
+			//add gravity
+			if(gravityVector != null){
+				LOGGER.info("AddedGravityVector:"+gravityVector);
+				movementVector.add(gravityVector, movementVector);
+				//gravity has been dealt with, reset it
+				gravityVector = null;
 			}			
 			//move in the direction of the vector			
 			spatial.move(movementVector);
@@ -148,6 +158,20 @@ public class PlayerShipControl extends AbstractControl {
 	 */
 	public void setMaxVelocity(float maxVelocity) {
 		this.maxVelocity = maxVelocity;
+	}
+
+	/**
+	 * @return the gravityVector
+	 */
+	public Vector3f getGravityVector() {
+		return gravityVector;
+	}
+
+	/**
+	 * @param gravityVector the gravityVector to set
+	 */
+	public void setGravityVector(Vector3f gravityVector) {
+		this.gravityVector = gravityVector;
 	}
 
 }

@@ -1,5 +1,7 @@
 package de.cbf.gravity_shooter;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,8 +27,10 @@ import com.jme3.scene.shape.Sphere;
 
 import de.cbf.gravity_shooter.camera.RTSCamera;
 import de.cbf.gravity_shooter.camera.RTSCameraAppState;
+import de.cbf.gravity_shooter.controls.GravityControl;
 import de.cbf.gravity_shooter.controls.PlayerKeyInputListener;
 import de.cbf.gravity_shooter.controls.PlayerShipControl;
+import de.cbf.gravity_shooter.entity.GravityPoint;
 import de.cbf.gravity_shooter.gui.StartScreen;
 import de.lessvoid.nifty.Nifty;
 
@@ -43,7 +47,7 @@ public class Main extends SimpleApplication {
 
 	private static final float MAX_VELOCITY = 1f;
 	private static final float ACCELERATION_VALUE = 0.01f;
-	private static final float ROTATION_VALUE = FastMath.DEG_TO_RAD*90;
+	private static final float ROTATION_VALUE = FastMath.DEG_TO_RAD*180;
 
 	public static final String SPACE_SHIP_NAME = "SpaceShip";
 
@@ -86,16 +90,28 @@ public class Main extends SimpleApplication {
         float degToRad = FastMath.DEG_TO_RAD;
         Quaternion quarternion = new Quaternion().fromAngles(0,-90*degToRad, -90*degToRad);
 		spaceShip.setLocalRotation(quarternion);
-		spaceShip.scale(0.2f);
+		spaceShip.scale(0.05f);
+		
 
 		spaceShipMovementNode = new Node(SPACE_SHIP_MOVEMENT_NODE);
+		
+		List<GravityPoint> gravityPoints = new ArrayList<GravityPoint>();
+		GravityPoint pointOne = new GravityPoint(nullPointGeom.getWorldTranslation(), 0.01f);
+		gravityPoints.add(pointOne);
+		//create controller, that will calculate gravity
+		GravityControl playerGravityControl = new GravityControl(gravityPoints);
+		playerGravityControl.setEpsilon(0.0f);
+		spaceShipMovementNode.addControl(playerGravityControl);
+		
 		//create controller, that will move our ship
 		PlayerShipControl playerShipControl = new PlayerShipControl();
 		playerShipControl.setMaxVelocity(MAX_VELOCITY);
 		//attach controller, that will move the playership
 		spaceShipMovementNode.addControl(playerShipControl);
-		
+				
 		spaceShipMovementNode.attachChild(spaceShip);
+		spaceShipMovementNode.move(0, -3f, 0);
+		
 		rootNode.attachChild(spaceShipMovementNode);
     }
 
@@ -136,7 +152,7 @@ public class Main extends SimpleApplication {
 		
 		float xCamLoc = 0f;		
 		float yCamLoc = 0f;
-		float zCamLoc = 7f;
+		float zCamLoc = 10f;
 		Vector3f camLocation = new Vector3f(xCamLoc, yCamLoc, zCamLoc);
 		cam.setLocation(camLocation);
 		
@@ -167,7 +183,9 @@ public class Main extends SimpleApplication {
 	 */
 	@Override
     public void simpleUpdate(float tpf) {
+		GravityControl gravityControl = spaceShipMovementNode.getControl(GravityControl.class);
 		//obtain control to set desired movement/rotation that is created in inputlistener
+		
 		PlayerShipControl playerShipControl = spaceShipMovementNode.getControl(PlayerShipControl.class);
 		
 		float desiredVelocity = playerKeyListener.getDesiredVelocity();
@@ -175,6 +193,7 @@ public class Main extends SimpleApplication {
 		desiredRotationRads = playerKeyListener.getDesiredRotationRads();		
 		playerShipControl.setDesiredVelocity(desiredVelocity);		
 		playerShipControl.setDesiredRotationRads(desiredRotationRads);
+		playerShipControl.setGravityVector(gravityControl.getGravityVector());
     }
 
     @Override
