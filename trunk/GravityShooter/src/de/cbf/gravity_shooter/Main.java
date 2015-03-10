@@ -2,6 +2,7 @@ package de.cbf.gravity_shooter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -63,11 +64,15 @@ public class Main extends SimpleApplication {
 	private Node spaceShipMovementNode;
 
 	private PlayerKeyInputListener playerKeyListener;
+	
+	private Random random = new Random();
 
     @Override
     public void simpleInitApp() {
     	//remove camera movement with the mouse (we don't use fps controls)
     	
+    	List<GravityPoint> gravityPoints = initMap();
+    	    	
     	initCameraControls();
     	initInputs();
     	initPhysics();
@@ -76,13 +81,14 @@ public class Main extends SimpleApplication {
     	Material mat_default = new Material( 
                 assetManager, "Common/MatDefs/Misc/ShowNormals.j3md");
     	
-    	Sphere nullPoint = new Sphere(20, 20, 1f);    	
-    	Geometry nullPointGeom = new Geometry("NullPoint", nullPoint);
-    	nullPointGeom.setMaterial(mat_default);    
-    	nullPointGeom.scale(0.1f);
-    	rootNode.attachChild(nullPointGeom);
-    	    	
-        Spatial spaceShip = assetManager.loadModel("Models/SpaceShips/SimpleSpaceShip.j3o");
+//    	generateNullPoint(mat_default);
+    	
+    	generateSpaceShip(mat_default,gravityPoints);
+    }
+
+
+	private void generateSpaceShip(Material mat_default, List<GravityPoint> gravityPoints) {
+		Spatial spaceShip = assetManager.loadModel("Models/SpaceShips/SimpleSpaceShip.j3o");
         spaceShip.setName(SPACE_SHIP_NAME);
         spaceShip.setMaterial(mat_default);
         
@@ -90,14 +96,10 @@ public class Main extends SimpleApplication {
         float degToRad = FastMath.DEG_TO_RAD;
         Quaternion quarternion = new Quaternion().fromAngles(0,-90*degToRad, -90*degToRad);
 		spaceShip.setLocalRotation(quarternion);
-		spaceShip.scale(0.05f);
-		
+		spaceShip.scale(0.05f);		
 
 		spaceShipMovementNode = new Node(SPACE_SHIP_MOVEMENT_NODE);
 		
-		List<GravityPoint> gravityPoints = new ArrayList<GravityPoint>();
-		GravityPoint pointOne = new GravityPoint(nullPointGeom.getWorldTranslation(), 0.01f);
-		gravityPoints.add(pointOne);
 		//create controller, that will calculate gravity
 		GravityControl playerGravityControl = new GravityControl(gravityPoints);
 		playerGravityControl.setEpsilon(0.0f);
@@ -112,10 +114,50 @@ public class Main extends SimpleApplication {
 		spaceShipMovementNode.attachChild(spaceShip);
 		spaceShipMovementNode.move(0, -3f, 0);
 		
-		rootNode.attachChild(spaceShipMovementNode);
-    }
+		rootNode.attachChild(spaceShipMovementNode);		
+	}
 
-	
+
+	private void generateNullPoint(Material mat_default) {
+		Sphere nullPoint = new Sphere(20, 20, 1f);    	
+    	Geometry nullPointGeom = new Geometry("NullPoint", nullPoint);
+    	nullPointGeom.setMaterial(mat_default);    
+    	nullPointGeom.scale(0.1f);
+    	rootNode.attachChild(nullPointGeom);    	    	
+		
+	}
+
+
+	private List<GravityPoint> initMap() {
+		List<GravityPoint> gravityPoints = new ArrayList<GravityPoint>();
+		Material mat_default = new Material( 
+                assetManager, "Common/MatDefs/Misc/ShowNormals.j3md");
+    	
+		for (int i = 0; i < 3; i++) {
+			GravityPoint point = generateGravityPoint(mat_default);
+			gravityPoints.add(point);
+		}		
+    	
+		return gravityPoints;
+	}
+
+	private GravityPoint generateGravityPoint(Material mat_default) {
+		float size = random.nextFloat();
+		float force = 0.01f*size;
+		float x = random.nextFloat()*5;
+		float y = random.nextFloat()*5;
+		
+		Sphere nullPoint = new Sphere(20, 20, size);    	
+    	Geometry nullPointGeom = new Geometry("Star"+size, nullPoint);
+    	nullPointGeom.setMaterial(mat_default);    
+    	nullPointGeom.scale(0.1f);
+    	nullPointGeom.move(x, y, 0);
+    	
+    	rootNode.attachChild(nullPointGeom);
+    	
+    	return new GravityPoint(nullPointGeom.getWorldTranslation(), force);    	
+	}
+
 	protected void initGUI() {
 		//init startscreen app state
 		StartScreen startScreen = new StartScreen();
