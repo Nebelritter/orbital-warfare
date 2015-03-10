@@ -87,7 +87,7 @@ public class PlayerShipControl extends AbstractControl {
 			}
 			//add gravity
 			if(gravityVector != null){
-				LOGGER.info("AddedGravityVector:"+gravityVector);
+				LOGGER.fine("AddedGravityVector:"+gravityVector);
 				movementVector.add(gravityVector, movementVector);
 				//gravity has been dealt with, reset it
 				gravityVector = null;
