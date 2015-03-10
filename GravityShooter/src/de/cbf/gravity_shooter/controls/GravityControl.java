@@ -30,6 +30,8 @@ public class GravityControl extends AbstractControl {
 	 */
 	private float epsilon;
 	
+	private Float maxForce;
+	
 	public GravityControl(List<GravityPoint> gravityPoints) {
 		super();
 		this.gravityPoints = gravityPoints;
@@ -49,6 +51,11 @@ public class GravityControl extends AbstractControl {
 			}
 			//tpf the vector
 			gravityVector.mult(tpf, gravityVector);
+			if(maxForce != null && gravityVector.length() > maxForce){
+				float correctionFactor = maxForce / gravityVector.length();
+				gravityVector.mult(correctionFactor , gravityVector);
+				LOGGER.info("Force corrected, factor:"+correctionFactor);
+			}
 			LOGGER.fine("EndForceVector:"+gravityVector);
 		}		
 	}
@@ -126,6 +133,20 @@ public class GravityControl extends AbstractControl {
 	 */
 	public void setEpsilon(float epsilon) {
 		this.epsilon = epsilon;
+	}
+
+	/**
+	 * @return the maxForce
+	 */
+	public float getMaxForce() {
+		return maxForce;
+	}
+
+	/**
+	 * @param maxForce the maxForce to set
+	 */
+	public void setMaxForce(Float maxForce) {
+		this.maxForce = maxForce;
 	}
 
 }

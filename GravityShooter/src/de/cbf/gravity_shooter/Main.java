@@ -46,7 +46,8 @@ public class Main extends SimpleApplication {
     public static final String ACTION_SELECT = "action.select";
     public static final String ACTION_DE_SELECT = "action.deselect";
 
-	private static final float MAX_VELOCITY = 1f;
+	private static final float MAX_VELOCITY = 2f;
+	private static final Float MAX_FORCE = 1f;//maximum force for gravibodies
 	private static final float ACCELERATION_VALUE = 0.01f;
 	private static final float ROTATION_VALUE = FastMath.DEG_TO_RAD*180;
 
@@ -103,6 +104,7 @@ public class Main extends SimpleApplication {
 		//create controller, that will calculate gravity
 		GravityControl playerGravityControl = new GravityControl(gravityPoints);
 		playerGravityControl.setEpsilon(0.0f);
+		playerGravityControl.setMaxForce(MAX_FORCE);
 		spaceShipMovementNode.addControl(playerGravityControl);
 		
 		//create controller, that will move our ship
@@ -118,7 +120,7 @@ public class Main extends SimpleApplication {
 	}
 
 
-	private void generateNullPoint(Material mat_default) {
+	protected void generateNullPoint(Material mat_default) {
 		Sphere nullPoint = new Sphere(20, 20, 1f);    	
     	Geometry nullPointGeom = new Geometry("NullPoint", nullPoint);
     	nullPointGeom.setMaterial(mat_default);    

@@ -26,7 +26,7 @@ public class PlayerShipControl extends AbstractControl {
 	
 	/** already tpf'ed	 */
 	private float desiredVelocity;
-	private float maxVelocity;
+	private Float maxVelocity;
 	/** already tpf'ed	 */
 	private float desiredRotationRads;
 	
@@ -67,20 +67,22 @@ public class PlayerShipControl extends AbstractControl {
 				Vector3f realMovement = direction.mult( - desiredVelocity);
 				
 				movementVector.add(realMovement,movementVector);
-				//calc if the speed that is build up too much
-				float speed = movementVector.length();		
-				float thisFrameMaxVelocity = maxVelocity * tpf;
-				float surmountSpeed =  speed - thisFrameMaxVelocity;
-				if(surmountSpeed > 0 ){
-					// we are going to fast
-					//calculate amount in percent			
-					float surmountFactor =  thisFrameMaxVelocity / speed;
-					//multiply with axes to shorten vector by the given amount
-					movementVector = movementVector.mult(surmountFactor);
-//					float newLength = movementVector.length();
-//					if(newLength != thisFrameMaxVelocity){
-//						System.out.println("calculation missed target by :"+(maxVelocity-newLength));
-//					}
+				//calc if the speed that is build up too much, if max velocity is set
+				if(maxVelocity != null){
+					float speed = movementVector.length();		
+					float thisFrameMaxVelocity = maxVelocity * tpf;
+					float surmountSpeed =  speed - thisFrameMaxVelocity;
+					if(surmountSpeed > 0 ){
+						// we are going to fast
+						//calculate amount in percent			
+						float surmountFactor =  thisFrameMaxVelocity / speed;
+						//multiply with axes to shorten vector by the given amount
+						movementVector = movementVector.mult(surmountFactor);
+//						float newLength = movementVector.length();
+//						if(newLength != thisFrameMaxVelocity){
+//							System.out.println("calculation missed target by :"+(maxVelocity-newLength));
+//						}
+					}				
 				}else{
 					//speed is okay
 				}
@@ -156,7 +158,7 @@ public class PlayerShipControl extends AbstractControl {
 	/**
 	 * @param maxVelocity the maxVelocity to set
 	 */
-	public void setMaxVelocity(float maxVelocity) {
+	public void setMaxVelocity(Float maxVelocity) {
 		this.maxVelocity = maxVelocity;
 	}
 
