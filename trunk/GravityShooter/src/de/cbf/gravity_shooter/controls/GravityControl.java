@@ -51,12 +51,15 @@ public class GravityControl extends AbstractControl {
 			}
 			//tpf the vector
 			gravityVector.mult(tpf, gravityVector);
-			if(maxForce != null && gravityVector.length() > maxForce){
-				float correctionFactor = maxForce / gravityVector.length();
-				gravityVector.mult(correctionFactor , gravityVector);
-				LOGGER.info("Force corrected, factor:"+correctionFactor);
-			}
-			LOGGER.fine("EndForceVector:"+gravityVector);
+			if(maxForce != null){
+				float maxForceTpF = maxForce * tpf;
+				if(gravityVector.length() > maxForceTpF){
+					float correctionFactor = maxForceTpF / gravityVector.length();
+					gravityVector.mult(correctionFactor , gravityVector);
+					LOGGER.info("Force corrected, factor:"+correctionFactor);
+				}
+				LOGGER.fine("EndForceVector:"+gravityVector);
+			}			
 		}		
 	}
 
