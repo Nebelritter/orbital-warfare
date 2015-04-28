@@ -1,0 +1,1 @@
+Strategic game to combine Spacebattles with according physics
