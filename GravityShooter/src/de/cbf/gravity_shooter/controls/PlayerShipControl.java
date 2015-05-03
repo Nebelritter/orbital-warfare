@@ -5,6 +5,7 @@ package de.cbf.gravity_shooter.controls;
 
 import java.util.logging.Logger;
 
+import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
@@ -22,17 +23,16 @@ import de.cbf.gravity_shooter.Main;
 public class PlayerShipControl extends AbstractControl {
 	private static final Logger LOGGER = Logger.getLogger(PlayerShipControl.class.getName());
 	
-	private static final Vector3f NULL_VECTOR = new Vector3f(0,0,0);
-	
 	/** already tpf'ed	 */
 	private float desiredVelocity;
 	private Float maxVelocity;
 	/** already tpf'ed	 */
 	private float desiredRotationRads;
 	
-	private Vector3f gravityVector; 
-	
-	private Vector3f movementVector = NULL_VECTOR;
+	private Vector3f gravityVector;
+
+	private boolean	stopMovement; 
+		
 	
 	/**
 	 * 
@@ -55,58 +55,38 @@ public class PlayerShipControl extends AbstractControl {
 
 
 	private void handleMovement(float tpf) {
-		Spatial spatial = getSpatial();
-		//get direction from ship, not movement node
-		if (spatial instanceof Node) {
-			//get direction of spaceship facing
-			if(desiredVelocity != 0){
-				Node movementNode = (Node) spatial;
-				Spatial spaceShip = movementNode.getChild(Main.SPACE_SHIP_NAME);
-				Vector3f direction = spaceShip.getLocalRotation().getRotationColumn(0); //TODO is this correct?
-										
-				Vector3f realMovement = direction.mult( - desiredVelocity);
+		RigidBodyControl physicsControl = spatial.getControl(RigidBodyControl.class);
+		
+		if(stopMovement){
+			physicsControl.clearForces();
+			return;
+		}
+		Vector3f movementVector = Vector3f.ZERO.clone();			
+		//set gravity influence 			
+		if(gravityVector != null){		
+			//gravity has been dealt with, reset it
+			movementVector.addLocal(gravityVector);
+			gravityVector = null;
+		}
+		if(desiredVelocity != 0){				
+			Vector3f direction = spatial.getLocalRotation().getRotationColumn(0);
+			Vector3f realMovement = direction.mult( - desiredVelocity);
+			movementVector.addLocal(realMovement);
+			desiredVelocity = 0;
+		}
+		physicsControl.applyCentralForce(movementVector);
 				
-				movementVector.add(realMovement,movementVector);
-				//calc if the speed that is build up too much, if max velocity is set
-				if(maxVelocity != null){
-					float speed = movementVector.length();		
-					float thisFrameMaxVelocity = maxVelocity * tpf;
-					float surmountSpeed =  speed - thisFrameMaxVelocity;
-					if(surmountSpeed > 0 ){
-						// we are going to fast
-						//calculate amount in percent			
-						float surmountFactor =  thisFrameMaxVelocity / speed;
-						//multiply with axes to shorten vector by the given amount
-						movementVector = movementVector.mult(surmountFactor);
-//						float newLength = movementVector.length();
-//						if(newLength != thisFrameMaxVelocity){
-//							System.out.println("calculation missed target by :"+(maxVelocity-newLength));
-//						}
-					}				
-				}else{
-					//speed is okay
-				}
-			}
-			//add gravity
-			if(gravityVector != null){
-				LOGGER.fine("AddedGravityVector:"+gravityVector);
-				movementVector.add(gravityVector, movementVector);
-				//gravity has been dealt with, reset it
-				gravityVector = null;
-			}			
-			//move in the direction of the vector			
-			spatial.move(movementVector);
-		}		
 	}
 
-
 	private void handleRotation(float tpf) {
-		if (spatial instanceof Node) {
-			//rotate child node for movement might be in other direction than facing
-			Node movementNode = (Node) spatial;
-			Spatial spaceShip = movementNode.getChild(Main.SPACE_SHIP_NAME);
-			Quaternion rotationDelta = new Quaternion().fromAngles(0,desiredRotationRads,0);
-			spaceShip.rotate(rotationDelta);
+		//physical way
+		RigidBodyControl physicsControl = spatial.getControl(RigidBodyControl.class);
+		if(stopMovement){
+			physicsControl.clearForces();
+			return;
+		}
+		if(desiredRotationRads != 0){				
+			physicsControl.applyTorque(new Vector3f(0,0,desiredRotationRads));	
 		}
 	}
 	
@@ -174,6 +154,10 @@ public class PlayerShipControl extends AbstractControl {
 	 */
 	public void setGravityVector(Vector3f gravityVector) {
 		this.gravityVector = gravityVector;
+	}
+
+	public void setStopMovement(boolean stopMovement) {
+		this.stopMovement = stopMovement;		
 	}
 
 }

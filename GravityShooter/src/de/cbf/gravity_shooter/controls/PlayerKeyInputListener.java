@@ -18,8 +18,10 @@ public class PlayerKeyInputListener implements ActionListener {
 	private static final Logger LOGGER = Logger.getLogger(PlayerKeyInputListener.class.getName());
 	
 	private static final String PLAYER_MOVEMENT_FORWARD = "player.move.forward";
+	private static final String PLAYER_MOVEMENT_BACK= "player.move.back";
 	private static final String PLAYER_ROTATION_RIGHT = "player.rotation.right";
 	private static final String PLAYER_ROTATION_LEFT = "player.rotation.left";
+	private static final String PLAYER_STOP = "player.stop";
 	
 	private float rotationValue;
 	private float accelerationValue;
@@ -29,11 +31,14 @@ public class PlayerKeyInputListener implements ActionListener {
 	private float desiredRotationRight;
 	private float desiredRotationLeft;
 
+	private boolean stopMovement;
 	
 	private static final String[] MAPPINGS = new String[]{
 		PLAYER_MOVEMENT_FORWARD,
+		PLAYER_MOVEMENT_BACK,
 		PLAYER_ROTATION_RIGHT,
-		PLAYER_ROTATION_LEFT
+		PLAYER_ROTATION_LEFT,
+		PLAYER_STOP
 	};
 	/**
 	 * 
@@ -50,11 +55,18 @@ public class PlayerKeyInputListener implements ActionListener {
 		switch (name) {
 		case PLAYER_MOVEMENT_FORWARD:
 			if(isPressed){
-				desiredVelocity += accelerationValue * tpf;				
+				desiredVelocity = accelerationValue * tpf;				
 			}else{				
 				desiredVelocity = 0;
 			}
 			break;
+		case PLAYER_MOVEMENT_BACK:
+			if(isPressed){
+				desiredVelocity = -accelerationValue * tpf;				
+			}else{				
+				desiredVelocity = 0;
+			}
+			break;	
 		case PLAYER_ROTATION_RIGHT:
 			if(isPressed){
 				desiredRotationRight = - rotationValue * tpf;
@@ -69,6 +81,14 @@ public class PlayerKeyInputListener implements ActionListener {
 				desiredRotationLeft = 0;
 			}
 			break;
+		case PLAYER_STOP:
+			if(isPressed){
+				stopMovement = true;
+			}else{
+				stopMovement = false;
+			}
+			
+			break;
 		default:
 			break;
 		}
@@ -77,8 +97,10 @@ public class PlayerKeyInputListener implements ActionListener {
 
 	public void registerWithInputManager(InputManager inputManager) {
 		inputManager.addMapping(PLAYER_MOVEMENT_FORWARD,new KeyTrigger(KeyInput.KEY_W));
+		inputManager.addMapping(PLAYER_MOVEMENT_BACK,new KeyTrigger(KeyInput.KEY_S));
 		inputManager.addMapping(PLAYER_ROTATION_RIGHT,new KeyTrigger(KeyInput.KEY_D));
 		inputManager.addMapping(PLAYER_ROTATION_LEFT,new KeyTrigger(KeyInput.KEY_A));
+		inputManager.addMapping(PLAYER_STOP,new KeyTrigger(KeyInput.KEY_SPACE));
 		
 		inputManager.addListener(this, MAPPINGS);
 	}
@@ -123,6 +145,20 @@ public class PlayerKeyInputListener implements ActionListener {
 	 */
 	public void setAccelerationValue(float accelerationValue) {
 		this.accelerationValue = accelerationValue;
+	}
+
+	/**
+	 * @return the stopMovement
+	 */
+	public boolean getStopMovement() {
+		return stopMovement;
+	}
+
+	/**
+	 * @param stopMovement the stopMovement to set
+	 */
+	public void setStopMovement(boolean stopMovement) {
+		this.stopMovement = stopMovement;
 	}
 
 }

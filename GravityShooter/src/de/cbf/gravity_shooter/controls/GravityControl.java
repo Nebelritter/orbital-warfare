@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
 import com.jme3.renderer.ViewPort;
@@ -32,6 +33,8 @@ public class GravityControl extends AbstractControl {
 	
 	private Float maxForce;
 	
+	
+	
 	public GravityControl(List<GravityPoint> gravityPoints) {
 		super();
 		this.gravityPoints = gravityPoints;
@@ -50,16 +53,16 @@ public class GravityControl extends AbstractControl {
 				}
 			}
 			//tpf the vector
-			gravityVector.mult(tpf, gravityVector);
+			gravityVector.mult(tpf, gravityVector);			
 			if(maxForce != null){
 				float maxForceTpF = maxForce * tpf;
 				if(gravityVector.length() > maxForceTpF){
 					float correctionFactor = maxForceTpF / gravityVector.length();
 					gravityVector.mult(correctionFactor , gravityVector);
-					LOGGER.info("Force corrected, factor:"+correctionFactor);
+					LOGGER.fine("Force corrected, factor:"+correctionFactor);
 				}
 				LOGGER.fine("EndForceVector:"+gravityVector);
-			}			
+			}
 		}		
 	}
 
@@ -152,4 +155,5 @@ public class GravityControl extends AbstractControl {
 		this.maxForce = maxForce;
 	}
 
+	
 }

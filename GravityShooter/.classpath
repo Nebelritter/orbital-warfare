@@ -14,7 +14,7 @@
 	<classpathentry kind="lib" path="lib/jme3/jME3-core.jar" sourcepath="lib/jme3/source-jme3.zip"/>
 	<classpathentry kind="lib" path="lib/jme3/jME3-desktop.jar" sourcepath="lib/jme3/source-jme3.zip"/>
 	<classpathentry kind="lib" path="lib/jme3/jME3-effects.jar" sourcepath="lib/jme3/source-jme3.zip"/>
-	<classpathentry kind="lib" path="lib/jme3/jME3-jbullet.jar" sourcepath="lib/jme3/source-jme3.zip"/>
+	<classpathentry kind="lib" path="lib/jme3/jME3-jbullet.jar" sourcepath="lib/jme3/jME3-jbullet.jar"/>
 	<classpathentry kind="lib" path="lib/jme3/jME3-jogg.jar" sourcepath="lib/jme3/source-jme3.zip"/>
 	<classpathentry kind="lib" path="lib/jme3/jME3-lwjgl-natives.jar" sourcepath="lib/jme3/source-jme3.zip"/>
 	<classpathentry kind="lib" path="lib/jme3/jME3-lwjgl.jar" sourcepath="lib/jme3/source-jme3.zip"/>

@@ -9,6 +9,12 @@ import java.util.logging.Logger;
 import com.jme3.app.FlyCamAppState;
 import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.BulletAppState;
+import com.jme3.bullet.collision.shapes.BoxCollisionShape;
+import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
+import com.jme3.bullet.collision.shapes.CompoundCollisionShape;
+import com.jme3.bullet.collision.shapes.SphereCollisionShape;
+import com.jme3.bullet.control.RigidBodyControl;
+import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.collision.CollisionResults;
 import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
@@ -36,9 +42,8 @@ import de.cbf.gravity_shooter.gui.StartScreen;
 import de.lessvoid.nifty.Nifty;
 
 
-/**
- * test
- * @author normenhansen
+/** 
+ * @author Alti
  */
 public class Main extends SimpleApplication {
 	private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
@@ -46,14 +51,14 @@ public class Main extends SimpleApplication {
     public static final String ACTION_SELECT = "action.select";
     public static final String ACTION_DE_SELECT = "action.deselect";
 
-	private static final float MAX_VELOCITY = 2f;
-	private static final Float MAX_FORCE = 1f;//maximum force for gravibodies
-	private static final float ACCELERATION_VALUE = 0.01f;
-	private static final float ROTATION_VALUE = FastMath.DEG_TO_RAD*180;
+	private static final float MAX_VELOCITY = 20f;
+	private static final Float MAX_FORCE = 100f;//maximum force for gravibodies
+	private static final float ACCELERATION_VALUE = 40f;
+	private static final float ROTATION_VALUE = FastMath.DEG_TO_RAD*180*5;
 
 	public static final String SPACE_SHIP_NAME = "SpaceShip";
 
-	private static final String SPACE_SHIP_MOVEMENT_NODE = "SpaceShipMovementNode";
+	private static final int GRAVIBODY_NUMBER = 3;
 	
 	public static void main(String[] args) {
         Main app = new Main();
@@ -62,8 +67,7 @@ public class Main extends SimpleApplication {
     }
 
 	protected BulletAppState bulletAppState;
-	private Node spaceShipMovementNode;
-
+	
 	private PlayerKeyInputListener playerKeyListener;
 	
 	private Random random = new Random();
@@ -71,12 +75,12 @@ public class Main extends SimpleApplication {
     @Override
     public void simpleInitApp() {
     	//remove camera movement with the mouse (we don't use fps controls)
-    	
-    	List<GravityPoint> gravityPoints = initMap();
-    	    	
     	initCameraControls();
     	initInputs();
     	initPhysics();
+    	
+    	List<GravityPoint> gravityPoints = initMap();
+    	
 //    	initGUI();
         
     	Material mat_default = new Material( 
@@ -89,34 +93,45 @@ public class Main extends SimpleApplication {
 
 
 	private void generateSpaceShip(Material mat_default, List<GravityPoint> gravityPoints) {
+		float scaleFactor = 2f;
+		
 		Spatial spaceShip = assetManager.loadModel("Models/SpaceShips/SimpleSpaceShip.j3o");
         spaceShip.setName(SPACE_SHIP_NAME);
         spaceShip.setMaterial(mat_default);
         
         //rotate spaceShip to be at bottom pointing upwards
         float degToRad = FastMath.DEG_TO_RAD;
-        Quaternion quarternion = new Quaternion().fromAngles(0,-90*degToRad, -90*degToRad);
-		spaceShip.setLocalRotation(quarternion);
-		spaceShip.scale(0.05f);		
-
-		spaceShipMovementNode = new Node(SPACE_SHIP_MOVEMENT_NODE);
+        
+		spaceShip.scale(0.05f*scaleFactor);		
+	
+		//create physics properties
+		CapsuleCollisionShape fuselageCollisionShape = new CapsuleCollisionShape(0.05f*scaleFactor,0.3f*scaleFactor,0);
+		BoxCollisionShape wingsCollisionShape = new BoxCollisionShape(new Vector3f(0.1f*scaleFactor,0.01f*scaleFactor,0.25f*scaleFactor));
+		CompoundCollisionShape starshipCollisionShape = new CompoundCollisionShape();
+		starshipCollisionShape.addChildShape(fuselageCollisionShape, new Vector3f(0.1f*scaleFactor,0f,0f));
+		starshipCollisionShape.addChildShape(wingsCollisionShape, new Vector3f(0.1f*scaleFactor,0f,0f));
+		
+    	RigidBodyControl physicsControl = new RigidBodyControl(starshipCollisionShape, 1);    	
+    	physicsControl.setDamping(0f,0.2f);
+		spaceShip.addControl(physicsControl);
+		bulletAppState.getPhysicsSpace().add(physicsControl);
+		
+		Quaternion quarternion = new Quaternion().fromAngles(0,-90*degToRad, -90*degToRad);
+		physicsControl.setPhysicsRotation(quarternion);
 		
 		//create controller, that will calculate gravity
 		GravityControl playerGravityControl = new GravityControl(gravityPoints);
 		playerGravityControl.setEpsilon(0.0f);
-		playerGravityControl.setMaxForce(MAX_FORCE);
-		spaceShipMovementNode.addControl(playerGravityControl);
+		playerGravityControl.setMaxForce(MAX_FORCE);		
+		spaceShip.addControl(playerGravityControl);
 		
 		//create controller, that will move our ship
 		PlayerShipControl playerShipControl = new PlayerShipControl();
 		playerShipControl.setMaxVelocity(MAX_VELOCITY);
 		//attach controller, that will move the playership
-		spaceShipMovementNode.addControl(playerShipControl);
-				
-		spaceShipMovementNode.attachChild(spaceShip);
-		spaceShipMovementNode.move(0, -3f, 0);
-		
-		rootNode.attachChild(spaceShipMovementNode);		
+		spaceShip.addControl(playerShipControl);
+    	
+		rootNode.attachChild(spaceShip);		
 	}
 
 
@@ -135,7 +150,7 @@ public class Main extends SimpleApplication {
 		Material mat_default = new Material( 
                 assetManager, "Common/MatDefs/Misc/ShowNormals.j3md");
     	
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < GRAVIBODY_NUMBER; i++) {
 			GravityPoint point = generateGravityPoint(mat_default);
 			gravityPoints.add(point);
 		}		
@@ -144,20 +159,39 @@ public class Main extends SimpleApplication {
 	}
 
 	private GravityPoint generateGravityPoint(Material mat_default) {
-		float size = random.nextFloat();
-		float force = 0.01f*size;
+		
+		float scaleFactor = 0.2f;
+		
+		float size = (random.nextFloat()+1)*scaleFactor;
+		float force = 300f*size;
 		float x = random.nextFloat()*5;
 		float y = random.nextFloat()*5;
 		
-		Sphere nullPoint = new Sphere(20, 20, size);    	
-    	Geometry nullPointGeom = new Geometry("Star"+size, nullPoint);
-    	nullPointGeom.setMaterial(mat_default);    
-    	nullPointGeom.scale(0.1f);
-    	nullPointGeom.move(x, y, 0);
+		//fixed point for testing
+//		float size = (3)*scaleFactor;
+//		float force = 100f*size;
+//		float x = 0;
+//		float y = 5;
+		
+		Vector3f location = new Vector3f(x,y,0);
+		
+		Sphere gravPoint = new Sphere(20, 20, size);    	
+    	Geometry gravPointGeom = new Geometry("Star"+size, gravPoint);
+    	gravPointGeom.setMaterial(mat_default);		
+    	gravPointGeom.move(location);
+    	    	
+    	//make gravity points kinematic (not moved by physics, but collidable)
+    	SphereCollisionShape sphereCollisionShape = new SphereCollisionShape(size);
+    	RigidBodyControl physicsControl = new RigidBodyControl(sphereCollisionShape, force);
+    	physicsControl.setKinematic(true);
+    	gravPointGeom.addControl(physicsControl);
+		bulletAppState.getPhysicsSpace().add(physicsControl);
     	
-    	rootNode.attachChild(nullPointGeom);
+    	rootNode.attachChild(gravPointGeom);
     	
-    	return new GravityPoint(nullPointGeom.getWorldTranslation(), force);    	
+    	GravityPoint point = new GravityPoint(gravPointGeom.getWorldTranslation(), force);
+    	
+    	return point;     	
 	}
 
 	protected void initGUI() {
@@ -211,6 +245,10 @@ public class Main extends SimpleApplication {
         bulletAppState = new BulletAppState();
         stateManager.attach(bulletAppState);
         bulletAppState.setDebugEnabled(true);
+        
+        //remove gravity of physics space
+        bulletAppState.getPhysicsSpace().setGravity(Vector3f.ZERO.clone());
+        
 	}
     
 //    protected void initGUI() {
@@ -227,10 +265,11 @@ public class Main extends SimpleApplication {
 	 */
 	@Override
     public void simpleUpdate(float tpf) {
-		GravityControl gravityControl = spaceShipMovementNode.getControl(GravityControl.class);
+		Spatial spaceShip = rootNode.getChild(SPACE_SHIP_NAME);
+		GravityControl gravityControl = spaceShip.getControl(GravityControl.class);
 		//obtain control to set desired movement/rotation that is created in inputlistener
 		
-		PlayerShipControl playerShipControl = spaceShipMovementNode.getControl(PlayerShipControl.class);
+		PlayerShipControl playerShipControl = spaceShip.getControl(PlayerShipControl.class);
 		
 		float desiredVelocity = playerKeyListener.getDesiredVelocity();
 		float desiredRotationRads;
@@ -238,6 +277,7 @@ public class Main extends SimpleApplication {
 		playerShipControl.setDesiredVelocity(desiredVelocity);		
 		playerShipControl.setDesiredRotationRads(desiredRotationRads);
 		playerShipControl.setGravityVector(gravityControl.getGravityVector());
+		playerShipControl.setStopMovement(playerKeyListener.getStopMovement());
     }
 
     @Override
